@@ -58,8 +58,8 @@ export function parseExcelFile(file: File): Promise<ExcelRow[]> {
             'CHAMADOS HARDWARE': Number(rowData['CHAMADOS HARDWARE']) || 0,
             'QTDE. KIT': Number(rowData['QTDE. KIT']) || 0,
             'TOTAL DE COLETAS': Number(rowData['TOTAL DE COLETAS']) || 0,
-            LATITUDE: Number(rowData.LATITUDE),
-            LONGITUDE: Number(rowData.LONGITUDE),
+            LATITUDE: Number(String(rowData.LATITUDE).replace(',', '.')),
+            LONGITUDE: Number(String(rowData.LONGITUDE).replace(',', '.')),
           };
         });
         
