@@ -21,11 +21,21 @@ export function FilterControls({
   onSwapCities, 
   onClearSelection 
 }: FilterControlsProps) {
-  const uniquePostos = [...new Set(data.map(row => row.POSTO))].sort();
-  const uniqueUFs = [...new Set(data.map(row => row.UF))].sort();
-  const uniqueLotes = [...new Set(data.map(row => row.LOTE))].sort();
-  const uniquePortes = [...new Set(data.map(row => row.PORTE))].sort();
-  const uniqueSubregioes = [...new Set(data.map(row => row.SUBREGIAO))].sort();
+  const uniquePostos = [...new Set(data.map(row => row.POSTO))]
+    .filter(value => value && typeof value === 'string' && value.trim() !== '')
+    .sort();
+  const uniqueUFs = [...new Set(data.map(row => row.UF))]
+    .filter(value => value && typeof value === 'string' && value.trim() !== '')
+    .sort();
+  const uniqueLotes = [...new Set(data.map(row => row.LOTE))]
+    .filter(value => value && typeof value === 'string' && value.trim() !== '')
+    .sort();
+  const uniquePortes = [...new Set(data.map(row => row.PORTE))]
+    .filter(value => value && typeof value === 'string' && value.trim() !== '')
+    .sort();
+  const uniqueSubregioes = [...new Set(data.map(row => row.SUBREGIAO))]
+    .filter(value => value && typeof value === 'string' && value.trim() !== '')
+    .sort();
 
   const handleMultiSelectChange = (key: keyof FilterState, value: string) => {
     const currentValues = filters[key] as string[];
