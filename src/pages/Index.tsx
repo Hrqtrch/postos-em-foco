@@ -5,7 +5,9 @@ import { MetricCard } from '@/components/MetricCard';
 import { DashboardMap } from '@/components/DashboardMap';
 import { NearestNeighborsTable } from '@/components/NearestNeighborsTable';
 import { ChartsGrid } from '@/components/ChartsGrid';
+import { ExportButtons } from '@/components/ExportButtons';
 import { parseExcelFile } from '@/utils/excel-parser';
+import { loadDataFromGithub } from '@/utils/github-data-loader';
 import { haversineDistance, getOSRMDistance } from '@/utils/distance';
 import { ExcelRow, FilterState, DistanceData, NearestNeighbor } from '@/types/excel-data';
 import { toast } from '@/hooks/use-toast';
@@ -17,12 +19,13 @@ import {
   Route,
   Ruler,
   Calculator,
-  TrendingDown
+  TrendingDown,
+  Download
 } from 'lucide-react';
 
 const Index = () => {
   const [data, setData] = useState<ExcelRow[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Inicialmente true para carregamento automático
   const [error, setError] = useState<string | null>(null);
   
   const [filters, setFilters] = useState<FilterState>({
@@ -31,7 +34,10 @@ const Index = () => {
     uf: [],
     lote: [],
     porte: [],
-    subregiao: []
+    subregiao: [],
+    posto: '',
+    radiusMin: 0,
+    radiusMax: 100
   });
 
   const [distanceData, setDistanceData] = useState<DistanceData>({
@@ -47,6 +53,7 @@ const Index = () => {
       if (filters.lote.length > 0 && !filters.lote.includes(row.LOTE)) return false;
       if (filters.porte.length > 0 && !filters.porte.includes(row.PORTE)) return false;
       if (filters.subregiao.length > 0 && !filters.subregiao.includes(row.SUBREGIAO)) return false;
+      if (filters.posto && filters.posto !== row.POSTO) return false;
       return true;
     });
   }, [data, filters]);
@@ -58,6 +65,7 @@ const Index = () => {
     return filteredData.map(current => {
       let nearest = '';
       let minDistance = Infinity;
+      let nearestRow: ExcelRow | null = null;
 
       filteredData.forEach(other => {
         if (current.POSTO !== other.POSTO) {
@@ -68,14 +76,21 @@ const Index = () => {
           if (distance < minDistance) {
             minDistance = distance;
             nearest = other.POSTO;
+            nearestRow = other;
           }
         }
       });
 
+      // Calcular tempo aproximado (assumindo velocidade média de 60 km/h)
+      const haversineTime = Math.round((minDistance / 60) * 60); // em minutos
+
       return {
         posto: current.POSTO,
         nearest,
-        distance: minDistance
+        distance: minDistance,
+        lote: nearestRow?.LOTE || '',
+        porte: nearestRow?.PORTE || '',
+        haversineTime
       };
     });
   }, [filteredData]);
@@ -96,6 +111,36 @@ const Index = () => {
       avgNearestDistance
     };
   }, [filteredData, nearestNeighbors]);
+
+  // Carregamento automático dos dados do GitHub
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const githubData = await loadDataFromGithub();
+        setData(githubData);
+        toast({
+          title: "Dados carregados automaticamente!",
+          description: `${githubData.length} registros importados do GitHub.`
+        });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar dados do GitHub';
+        setError(errorMessage);
+        toast({
+          title: "Erro no carregamento automático",
+          description: "Falha ao carregar dados do GitHub. Use o upload manual.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (data.length === 0) {
+      loadData();
+    }
+  }, []);
 
   // Calcular distâncias entre cidades selecionadas
   useEffect(() => {
@@ -140,7 +185,10 @@ const Index = () => {
         uf: [],
         lote: [],
         porte: [],
-        subregiao: []
+        subregiao: [],
+        posto: '',
+        radiusMin: 0,
+        radiusMax: 100
       });
       toast({
         title: "Arquivo carregado com sucesso!",
@@ -202,16 +250,23 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-dashboard-bg">
+    <div className="min-h-screen bg-dashboard-bg dashboard-container">
       <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
-            Painel Interativo de Análise
-          </h1>
-          <p className="text-muted-foreground">
-            Dashboard para análise de dados geográficos e métricas operacionais
-          </p>
+        {/* Header com Exportação */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
+              Painel Interativo de Análise
+            </h1>
+            <p className="text-muted-foreground">
+              Dashboard para análise de dados geográficos e métricas operacionais
+            </p>
+          </div>
+          <ExportButtons
+            data={filteredData}
+            nearestNeighbors={nearestNeighbors}
+            summaryMetrics={summaryMetrics}
+          />
         </div>
 
         {/* Cartões Resumo */}
@@ -297,6 +352,7 @@ const Index = () => {
         {/* Tabela de Vizinhos */}
         <NearestNeighborsTable 
           data={nearestNeighbors}
+          allData={filteredData}
           loading={loading}
         />
       </div>

@@ -20,6 +20,9 @@ export interface FilterState {
   lote: string[];
   porte: string[];
   subregiao: string[];
+  posto: string;
+  radiusMin: number;
+  radiusMax: number;
 }
 
 export interface DistanceData {
@@ -32,4 +35,20 @@ export interface NearestNeighbor {
   posto: string;
   nearest: string;
   distance: number;
+  lote: string;
+  porte: string;
+  osrmDistance?: number;
+  haversineTime?: number; // em minutos
+  osrmTime?: number; // em minutos
+}
+
+export interface NeighborInRadius {
+  posto: string;
+  targetPosto: string;
+  distance: number;
+  lote: string;
+  porte: string;
+  osrmDistance?: number;
+  haversineTime?: number;
+  osrmTime?: number;
 }

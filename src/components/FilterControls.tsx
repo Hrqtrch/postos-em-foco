@@ -69,7 +69,7 @@ export function FilterControls({
       <CardContent className="space-y-6">
         {/* Filtros obrigatórios */}
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-muted-foreground">Cidades para Análise</h4>
+          <h4 className="text-sm font-semibold text-muted-foreground">Análise de Distância</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -126,6 +126,34 @@ export function FilterControls({
               <Trash2 className="w-4 h-4 mr-2" />
               Limpar Seleção
             </Button>
+          </div>
+        </div>
+
+        {/* Filtro de Posto Individual */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-semibold text-muted-foreground">Filtro de Posto</h4>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Posto Específico</label>
+            <Select 
+              value={filters.posto} 
+              onValueChange={(value) => onFiltersChange({ ...filters, posto: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um posto específico" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                <SelectItem value="">Todos os postos</SelectItem>
+                {uniquePostos.map(posto => (
+                  <SelectItem key={posto} value={posto}>{posto}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {filters.posto && (
+              <p className="text-xs text-muted-foreground">
+                Filtrando por: <span className="font-medium">{filters.posto}</span>
+              </p>
+            )}
           </div>
         </div>
 
