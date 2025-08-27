@@ -29,12 +29,20 @@ export function parseExcelFile(file: File): Promise<ExcelRow[]> {
             rowData[header] = row[colIndex];
           });
           
-          // Validar campos obrigatórios
-          const requiredFields = ['POSTO', 'ESTADO', 'UF', 'PAIS', 'LOTE', 'PORTE', 'SUBREGIAO', 'CHAMADOS HARDWARE', 'QTDE. KIT', 'TOTAL DE COLETAS', 'LATITUDE', 'LONGITUDE'];
+          // Validar campos obrigatórios (SUBREGIAO pode estar vazia)
+          const requiredFields = ['POSTO', 'ESTADO', 'UF', 'PAIS', 'LOTE', 'PORTE', 'CHAMADOS HARDWARE', 'QTDE. KIT', 'TOTAL DE COLETAS', 'LATITUDE', 'LONGITUDE'];
+          const optionalFields = ['SUBREGIAO']; // Campos que podem estar vazios
           
           for (const field of requiredFields) {
-            if (!(field in rowData) || rowData[field] === undefined || rowData[field] === null) {
+            if (!(field in rowData) || rowData[field] === undefined || rowData[field] === null || rowData[field] === '') {
               throw new Error(`Campo obrigatório '${field}' não encontrado ou vazio na linha ${index + 2}`);
+            }
+          }
+          
+          // Verificar se campos opcionais existem como coluna (mas podem estar vazios)
+          for (const field of optionalFields) {
+            if (!(field in rowData)) {
+              throw new Error(`Campo '${field}' não encontrado na linha ${index + 2}`);
             }
           }
           
@@ -46,7 +54,7 @@ export function parseExcelFile(file: File): Promise<ExcelRow[]> {
             PAIS: String(rowData.PAIS).trim(),
             LOTE: String(rowData.LOTE).trim(),
             PORTE: String(rowData.PORTE).trim(),
-            SUBREGIAO: String(rowData.SUBREGIAO).trim(),
+            SUBREGIAO: rowData.SUBREGIAO ? String(rowData.SUBREGIAO).trim() : '', // Permite vazio
             'CHAMADOS HARDWARE': Number(rowData['CHAMADOS HARDWARE']) || 0,
             'QTDE. KIT': Number(rowData['QTDE. KIT']) || 0,
             'TOTAL DE COLETAS': Number(rowData['TOTAL DE COLETAS']) || 0,

@@ -93,7 +93,8 @@ export function ExcelUpload({ onFileSelect, loading = false, error }: ExcelUploa
 
             <div className="text-xs text-muted-foreground space-y-1">
               <p>Formatos aceitos: .xlsx, .xls</p>
-              <p>Colunas obrigatórias: POSTO, ESTADO, UF, PAIS, LOTE, PORTE, SUBREGIAO, CHAMADOS HARDWARE, QTDE. KIT, TOTAL DE COLETAS, LATITUDE, LONGITUDE</p>
+              <p>Colunas obrigatórias: POSTO, ESTADO, UF, PAIS, LOTE, PORTE, CHAMADOS HARDWARE, QTDE. KIT, TOTAL DE COLETAS, LATITUDE, LONGITUDE</p>
+              <p>Nota: SUBREGIAO pode conter células vazias</p>
             </div>
           </div>
         </CardContent>
