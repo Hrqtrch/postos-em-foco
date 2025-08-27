@@ -21,21 +21,22 @@ export function FilterControls({
   onSwapCities, 
   onClearSelection 
 }: FilterControlsProps) {
-  const uniquePostos = [...new Set(data.map(row => row.POSTO))]
-    .filter(value => value && typeof value === 'string' && value.trim() !== '')
-    .sort();
-  const uniqueUFs = [...new Set(data.map(row => row.UF))]
-    .filter(value => value && typeof value === 'string' && value.trim() !== '')
-    .sort();
-  const uniqueLotes = [...new Set(data.map(row => row.LOTE))]
-    .filter(value => value && typeof value === 'string' && value.trim() !== '')
-    .sort();
-  const uniquePortes = [...new Set(data.map(row => row.PORTE))]
-    .filter(value => value && typeof value === 'string' && value.trim() !== '')
-    .sort();
-  const uniqueSubregioes = [...new Set(data.map(row => row.SUBREGIAO))]
-    .filter(value => value && typeof value === 'string' && value.trim() !== '')
-    .sort();
+  // More robust filtering to prevent any empty values
+  const filterValidValues = (values: any[]) => 
+    values.filter(value => 
+      value !== null && 
+      value !== undefined && 
+      value !== '' &&
+      typeof value === 'string' && 
+      value.toString().trim() !== '' &&
+      value.toString().length > 0
+    );
+
+  const uniquePostos = filterValidValues([...new Set(data.map(row => row.POSTO))]).sort();
+  const uniqueUFs = filterValidValues([...new Set(data.map(row => row.UF))]).sort();
+  const uniqueLotes = filterValidValues([...new Set(data.map(row => row.LOTE))]).sort();
+  const uniquePortes = filterValidValues([...new Set(data.map(row => row.PORTE))]).sort();
+  const uniqueSubregioes = filterValidValues([...new Set(data.map(row => row.SUBREGIAO))]).sort();
 
   const handleMultiSelectChange = (key: keyof FilterState, value: string) => {
     const currentValues = filters[key] as string[];
